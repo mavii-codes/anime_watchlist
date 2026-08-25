@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0e1018">
+  <title>Nightwave Anime Watchlist</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=3">
+</head>
+<body>
+  <div id="app" class="app-shell" :class="{ 'light-theme': isLightTheme }">
+    <header class="topbar">
+      <div class="header-left">
+        <a class="brand" href="#top" aria-label="Nightwave home">
+          <span class="brand-mark">NW</span>
+          <span>Nightwave</span>
+        </a>
+        <button class="theme-toggle" @click="toggleTheme" :aria-label="isLightTheme ? 'Switch to dark mode' : 'Switch to light mode'">{{ isLightTheme ? '☾' : '☀' }}</button>
+      </div>
+      <span class="topbar-note">Your personal anime log</span>
+    </header>
+
+    <main id="top" class="page-content">
+      <section class="hero-section">
+        <div class="hero-copy">
+          <p class="eyebrow">WATCHLIST / 2026</p>
+          <h1>Keep your next<br><span>story close.</span></h1>
+          <p class="hero-text">A calm corner for the shows you are watching, loving, and saving for later.</p>
+        </div>
+        <div class="hero-orbit" aria-hidden="true">
+          <div class="orbit-ring ring-one"></div>
+          <div class="orbit-ring ring-two"></div>
+          <div class="orbit-core">W</div>
+          <span class="orbit-dot dot-one"></span>
+          <span class="orbit-dot dot-two"></span>
+        </div>
+      </section>
+
+      <section class="stats-row" aria-label="Watchlist summary">
+        <div class="stat-block">
+          <span class="stat-value">{{ summary.total }}</span>
+          <span class="stat-label">Total anime</span>
+        </div>
+        <div class="stat-block">
+          <span class="stat-value">{{ summary.watching }}</span>
+          <span class="stat-label">Watching now</span>
+        </div>
+        <div class="stat-block">
+          <span class="stat-value">{{ summary.completed }}</span>
+          <span class="stat-label">Completed</span>
+        </div>
+        <div class="stat-quote">“Every episode is a<br>small escape.”</div>
+      </section>
+
+      <section class="workspace-grid">
+        <aside class="add-panel panel-surface">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">NEW ENTRY</p>
+              <h2>Add to your list</h2>
+            </div>
+            <span class="plus-icon">+</span>
+          </div>
+          <form @submit.prevent="addAnime">
+            <label for="title">Title</label>
+            <input id="title" v-model.trim="newAnime.title" type="text" placeholder="e.g. Frieren" required>
+
+            <label for="genre">Genre</label>
+            <input id="genre" v-model.trim="newAnime.genre" type="text" placeholder="e.g. Fantasy" required>
+
+            <label for="image">Poster filename (optional)</label>
+            <input id="image" v-model.trim="newAnime.image" type="text" placeholder="e.g. frieren.jpg">
+
+            <div class="form-split">
+              <div>
+                <label for="episodes">Episodes</label>
+                <input id="episodes" v-model.number="newAnime.episodes" type="number" min="1" placeholder="12" required>
+              </div>
+              <div>
+                <label for="status">Status</label>
+                <select id="status" v-model="newAnime.status">
+                  <option>Watching</option>
+                  <option>Completed</option>
+                  <option>Plan to Watch</option>
+                </select>
+              </div>
+            </div>
+            <button class="primary-button" type="submit">Add anime <span>+</span></button>
+          </form>
+        </aside>
+
+        <section class="list-panel">
+          <div class="list-toolbar">
+            <div>
+              <p class="eyebrow">YOUR LIBRARY</p>
+              <h2>Anime collection <span>{{ filteredAnime.length }}</span></h2>
+            </div>
+            <div class="library-tools">
+              <label class="search-box" for="search"><span aria-hidden="true">⌕</span><input id="search" v-model.trim="searchQuery" type="search" placeholder="Search anime..."></label>
+              <select class="sort-select" v-model="sortBy" aria-label="Sort anime">
+                <option value="added">Recently added</option>
+                <option value="title">Title A-Z</option>
+                <option value="episodes">Most episodes</option>
+                <option value="favorites">Favorites first</option>
+              </select>
+            </div>
+            <div class="filter-group" aria-label="Filter anime">
+              <button v-for="filter in filters" :key="filter" class="filter-button" :class="{ active: activeFilter === filter }" @click="activeFilter = filter">{{ filter }}</button>
+            </div>
+          </div>
+
+          <transition-group v-if="filteredAnime.length" name="card-list" tag="div" class="anime-grid">
+            <article v-for="anime in filteredAnime" :key="anime.id" class="anime-card" :class="{ favorite: anime.isFavorite }">
+              <div class="card-topline">
+                <span class="status-badge watching" v-if="anime.status === 'Watching'">Watching</span>
+                <span class="status-badge completed" v-else-if="anime.status === 'Completed'">Completed</span>
+                <span class="status-badge planned" v-else>Plan to Watch</span>
+                <button class="favorite-button" :class="{ active: anime.isFavorite }" @click="toggleFavorite(anime.id)" :aria-label="anime.isFavorite ? 'Remove from favorites' : 'Add to favorites'">{{ anime.isFavorite ? '★' : '☆' }}</button>
+              </div>
+              <div class="card-art" :class="artClass(anime)">
+                <img :src="anime.image || 'images/default.jpg'" :alt="`${anime.title} poster`" @error="usePlaceholder(anime)">
+              </div>
+              <div class="card-body">
+                <h3>{{ anime.title }}</h3>
+                <p>{{ anime.genre }} <span class="dot-separator">•</span> {{ anime.episodes }} episodes</p>
+                <div class="card-actions">
+                  <select :value="anime.status" @change="changeStatus(anime.id, $event.target.value)" :aria-label="`Change status for ${anime.title}`">
+                    <option>Watching</option>
+                    <option>Completed</option>
+                    <option>Plan to Watch</option>
+                  </select>
+                  <button class="remove-button" @click="removeAnime(anime.id)">Remove</button>
+                </div>
+              </div>
+            </article>
+          </transition-group>
+          <div v-else class="empty-state">
+            <span class="empty-symbol">/</span>
+            <h3>No anime here yet</h3>
+            <p>Add a title or choose another filter to keep exploring.</p>
+          </div>
+        </section>
+      </section>
+    </main>
+    <footer class="footer">NIGHTWAVE <span>•</span> Your watchlist, your pace</footer>
+    <transition name="toast"><div v-if="notification" class="notification" role="status">{{ notification }}</div></transition>
+  </div>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="app.js?v=4"></script>
+</body>
+</html>
