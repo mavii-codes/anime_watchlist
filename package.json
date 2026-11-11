@@ -1,0 +1,26 @@
+{
+  "name": "anime-watchlist",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "start": "npm start --workspace server",
+    "dev": "concurrently -k \"npm run dev --workspace client\" \"npm start --workspace server\"",
+    "dev:client": "npm run dev --workspace client",
+    "dev:server": "npm start --workspace server",
+    "build": "npm run build --workspace client",
+    "preview": "npm run preview --workspace client",
+    "lint": "eslint .",
+    "test": "npm test --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "concurrently": "^9.1.2",
+    "eslint": "^10.14.0",
+    "eslint-plugin-vue": "^10.12.0",
+    "globals": "^17.14.0"
+  }
+}

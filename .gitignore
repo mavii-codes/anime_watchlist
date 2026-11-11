@@ -38,9 +38,15 @@ __screenshots__/
 # Vite
 *.timestamp-*-*.mjs
 
-# Backend
-backend/.env
-backend/node_modules
+# Server (backend)
+server/.env
+server/node_modules
+
+# Legacy SQLite data
+server/data
+
+# Client build output
+client/dist
 *.db
 *.db-shm
 *.db-wal

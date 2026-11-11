@@ -1,0 +1,27 @@
+{
+  "name": "anime-watchlist-client",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Nightwave Anime Watchlist — Vue 3 + Quasar frontend",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "quasar": "^2.18.5",
+    "vue": "^3.5.13",
+    "vue-router": "^5.4.0"
+  },
+  "devDependencies": {
+    "@quasar/vite-plugin": "^1.9.0",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vue/test-utils": "^2.5.1",
+    "jsdom": "^31.0.0",
+    "sass-embedded": "^1.83.4",
+    "vite": "^6.1.0",
+    "vitest": "^5.1.0"
+  }
+}
